@@ -7,6 +7,8 @@ from typing import List
 from .models import User, Course
 from .schemas import RegisterSchema, LoginSchema, TokenSchema, UserSchema, CourseSchema, CourseCreateSchema
 from .jwt_auth import create_token, AuthBearer, EXPIRATION_MINUTES
+from .utils.rate_limit import check_rate_limit
+from .rbac import assert_is_dosen_or_admin
 
 # Inisiasi API
 api = NinjaAPI(title="Simple LMS Backend", version="1.0.0")
@@ -35,7 +37,7 @@ def register(request, data: RegisterSchema):
 @api.post("/auth/login", response=TokenSchema, tags=["Auth"])
 def login(request, data: LoginSchema):
     ip = request.META.get('REMOTE_ADDR')
-    check_rate_limit(ip):
+    check_rate_limit(ip)
     """
     Login user dan mendapatkan JWT Token
     """
