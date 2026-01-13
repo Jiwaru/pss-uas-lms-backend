@@ -55,7 +55,7 @@ def login(request, data: LoginSchema):
 
 # --- COURSE ENDPOINTS ---
 
-@api.post("/courses", ...)
+@api.post("/courses", response=CourseSchema, auth=AuthBearer(), tags=["Course"])
 def create_course(request, data: CourseCreateSchema):
     assert_is_dosen_or_admin(request)
     """
