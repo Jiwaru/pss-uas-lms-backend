@@ -76,21 +76,18 @@ def create_course(request, data: CourseCreateSchema):
     
     return course
 
-@api.get("/courses", response=List[CourseSchema], auth=AuthBearer(), tags=["Course"])
+@api.get("/courses", response=List[CourseSchema], tags=["Course"])
 def list_courses(request):
-    """
-    Mengambil semua course dengan Caching Redis.
-    """
-    # 1. Cek Redis dulu
-    cached_data = cache.get("courses_data")
-    if cached_data:
-        return cached_data # Return data cache (Cepat!)
-
-    # 2. Kalau tidak ada, ambil dari DB
+    # 1. Cek apakah data ada di Redis?
+    data = cache.get("courses_data")
+    if data:
+        return data  # <-- Kalau ada, kembalikan data dari Redis (Cepat!)
+    
+    # 2. Kalau tidak ada, ambil dari Database
     courses = list(Course.objects.all())
     
-    # 3. Simpan ke Redis (Expire 15 menit)
-    cache.set("courses_data", courses, timeout=900)
+    # 3. SIMPAN ke Redis (Ini langkah yang membuat key muncul!)
+    cache.set("courses_data", courses, timeout=60*5)  # Timeout 5 menit
     
     return courses
 

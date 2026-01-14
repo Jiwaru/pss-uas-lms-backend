@@ -1,8 +1,3 @@
-Berikut adalah isi file `README.md` lengkap yang disusun secara profesional untuk memenuhi standar penilaian UAS .
-
-Silakan buat file bernama **`README.md`** di folder utama proyek kamu, lalu _copy-paste_ seluruh kode di bawah ini.
-
-````markdown
 # Simple LMS Backend (Django Ninja + Redis)
 
 Proyek ini adalah Backend untuk **Simple Learning Management System (LMS)** yang dikembangkan sebagai Tugas Akhir Mata Kuliah **Pemrograman Sisi Server**.
@@ -39,8 +34,6 @@ Proyek ini memenuhi seluruh kriteria fungsional yang diminta:
 - **Cache & NoSQL**: Redis (via Docker)
 - **Containerization**: Docker (untuk Redis)
 
----
-
 ## 🚀 Panduan Instalasi (Setup)
 
 Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal:
@@ -48,10 +41,10 @@ Ikuti langkah-langkah berikut untuk menjalankan proyek di komputer lokal:
 ### 1. Clone Repository
 
 ```bash
-git clone [https://github.com/username-kamu/uas-backend-lms.git](https://github.com/username-kamu/uas-backend-lms.git)
-cd uas-backend-lms
+git clone https://github.com/Jiwaru/pss-uas-lms-backend.git
+cd pss-uas-lms-backend
+
 ```
-````
 
 ### 2. Setup Virtual Environment
 
@@ -117,30 +110,70 @@ Server akan berjalan di: `http://127.0.0.1:8000`
 
 ---
 
-## 🧪 Panduan Testing (User Guide)
+## 🧪 Panduan Testing (Skenario Pengujian)
 
-Pengujian API dapat dilakukan melalui **Swagger UI** yang disediakan otomatis oleh Django Ninja.
+Pengujian API dapat dilakukan dengan mudah melalui **Swagger UI** yang disediakan otomatis.
 
 1. **Buka Dokumentasi API:**
-   Akses URL: [http://127.0.0.1:8000/api/docs](https://www.google.com/search?q=http://127.0.0.1:8000/api/docs)
-2. **Skenario Testing:**
+   Akses URL: [http://127.0.0.1:8000/api/docs](http://127.0.0.1:8000/api/docs)
+2. **Langkah 1: Registrasi User (Wajib)**
+   Gunakan endpoint `POST /api/auth/register` untuk membuat akun Dosen dan Mahasiswa.
 
-- **Register User:** Gunakan endpoint `/api/auth/register`.
-- Role `1` = Dosen (Bisa Create/Delete).
-- Role `2` = Mahasiswa (Hanya bisa Read).
+- **Buat Akun Dosen (Role 1):**
 
-- **Login & Authorize:**
-- Login di `/api/auth/login` untuk mendapatkan `access_token`.
-- Klik tombol **Authorize** (ikon gembok) di kanan atas Swagger.
-- Masukkan format: `Bearer <paste_token_disini>`.
+```json
+{
+  "username": "dosen1",
+  "password": "password123",
+  "role": 1,
+  "email": "dosen1@test.com"
+}
+```
 
-- **Test RBAC:**
-- Login sebagai Mahasiswa -> Coba `DELETE /api/lms/courses/{id}` -> Harusnya **Gagal (403)**.
-- Login sebagai Dosen -> Coba `POST` atau `DELETE` -> Harusnya **Sukses (200)**.
+- **Buat Akun Mahasiswa (Role 2):**
 
-- **Test Redis Session:**
-- Akses endpoint `/api/lms/test-session`.
-- Refresh beberapa kali, counter akan bertambah (data ini disimpan di Redis).
+```json
+{
+  "username": "mhs1",
+  "password": "password123",
+  "role": 2,
+  "email": "mhs1@test.com"
+}
+```
+
+3. **Langkah 2: Login & Authorize**
+
+- Gunakan endpoint `POST /api/auth/login`.
+- Masukkan data login (misal: `dosen1` / `password123`).
+- Salin **access_token** dari response.
+- Klik tombol **Authorize** (Gembok) di kanan atas -> Masukkan: `Bearer <token_kamu>`.
+
+4. **Langkah 3: Create Course (Test RBAC Dosen)**
+
+- Login sebagai **Dosen**.
+- Gunakan endpoint `POST /api/courses`.
+- Masukkan data:
+
+```json
+{
+  "title": "Keamanan Siber",
+  "description": "Dasar Authentication & Authorization"
+}
+```
+
+- **Hasil:** Harus `200 OK`.
+
+5. **Langkah 4: Test Security (Mahasiswa)**
+
+- Ganti Token menjadi **Mahasiswa** (Login ulang -> Authorize baru).
+- Coba hapus course di endpoint `DELETE /api/courses/{id}`.
+- **Hasil:** Harus `403 Forbidden` (Sesuai Soal).
+
+6. **Langkah 5: Test Redis Session**
+
+- Akses endpoint `GET /api/lms/test-session`.
+- Refresh browser beberapa kali.
+- **Hasil:** Angka `visit_count` bertambah (menandakan session tersimpan di Redis).
 
 ---
 
@@ -151,6 +184,7 @@ Berikut adalah bukti bahwa sistem berjalan sesuai spesifikasi soal.
 ### 1. Tampilan Swagger UI
 
 Seluruh endpoint telah terdokumentasi dan dikelompokkan berdasarkan Tags (Auth, Course, Session).
+![Tampilan Swagger UI](SwaggerUI.png)
 
 ### 2. Bukti Redis (Cache & Session Aktif)
 
@@ -166,6 +200,7 @@ keys *
 ```
 
 **Hasil:**
+![Bukti Redis Terminal](Redis-Terminal.png)
 
 _Penjelasan:_
 
@@ -194,12 +229,5 @@ uas-backend-lms/
     ├── schemas.py        # Pydantic Schemas
     ├── jwt_auth.py       # JWT Authentication Handler
     └── rbac.py           # Role-Based Access Control Logic
-
-```
-
-```
-
-**⚠️ PENTING:**
-Jangan lupa untuk meletakkan file gambar **`image_1fc512.png`** (Screenshot Swagger) dan **`image_1fc92d.png`** (Screenshot Terminal Redis yang ada isinya) di dalam folder yang sama dengan file README.md ini agar gambarnya muncul saat dibuka dosen.
 
 ```
